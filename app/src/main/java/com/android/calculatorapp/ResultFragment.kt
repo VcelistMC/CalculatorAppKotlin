@@ -18,7 +18,6 @@ class ResultFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -26,6 +25,7 @@ class ResultFragment : Fragment() {
         initViews(view);
         initClickListeners();
         initVars()
+        showResult()
     }
 
     private fun initClickListeners() {

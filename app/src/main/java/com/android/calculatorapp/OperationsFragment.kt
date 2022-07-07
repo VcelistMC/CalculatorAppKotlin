@@ -26,7 +26,6 @@ class OperationsFragment : Fragment() {
     lateinit var calculatorViewModel: CalculatorViewModel
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -69,13 +68,10 @@ class OperationsFragment : Fragment() {
         screen = parentView.findViewById(R.id.input_text_view)
     }
 
-
-
     private fun onClear(it: View){
         calculatorViewModel.clear()
         updateView("")
     }
-
 
     private fun constructRow(rowElements: Array<Char>, parentLayout: LinearLayout){
         for(element in rowElements){
@@ -87,7 +83,10 @@ class OperationsFragment : Fragment() {
         }
     }
 
-    private fun createAndAddButton(buttonText: String, parentLayout: LinearLayout, buttonCallback: (it: View) -> Unit){
+    private fun createAndAddButton(buttonText: String,
+                                   parentLayout: LinearLayout,
+                                   buttonCallback: (it: View) -> Unit
+    ){
         val newButton = createButton(buttonText, buttonCallback)
         parentLayout.addView(newButton)
     }
@@ -99,7 +98,6 @@ class OperationsFragment : Fragment() {
 
         updateView(this.calculatorViewModel.getCurrentExpr())
     }
-
 
 
     private fun createButton(buttonText: String, buttonCallback: (it: View) -> Unit): Button{

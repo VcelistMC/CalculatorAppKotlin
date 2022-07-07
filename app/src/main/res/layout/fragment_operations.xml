@@ -12,12 +12,12 @@
         tools:text="12 + 14"
         android:textColor="@color/white"
         android:textAlignment="center"
-        android:padding="10pt"
+        android:padding="10dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/buttons_container"
-        android:textSize="10pt"
+        android:textSize="20sp"
         android:id="@+id/input_text_view"
         />
     <androidx.constraintlayout.widget.ConstraintLayout

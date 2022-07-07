@@ -9,10 +9,6 @@ class CalculatorViewModel: ViewModel() {
     var number2 = ""
     var operation = ""
 
-    init {
-
-    }
-
 
     fun initMembers(){
         currentResult = 0f
@@ -53,6 +49,7 @@ class CalculatorViewModel: ViewModel() {
     }
 
     fun getResult(): Float{
+        calculateResult()
         val res =  currentResult
         clear()
         return res
