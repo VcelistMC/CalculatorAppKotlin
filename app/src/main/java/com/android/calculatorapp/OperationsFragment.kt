@@ -1,7 +1,5 @@
 package com.android.calculatorapp
 
-import android.app.ActionBar
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,10 +9,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.os.bundleOf
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import java.lang.Character.isDigit
-import java.util.*
 
 
 class OperationsFragment : Fragment() {
@@ -42,6 +39,25 @@ class OperationsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initViews(view)
         initVars()
+        initLiveDataObservers()
+    }
+
+    private fun initLiveDataObservers() {
+        initExprObserver()
+        initResultObserver()
+    }
+
+    private fun initResultObserver() {
+        calculatorViewModel.currentResult.observe(viewLifecycleOwner, Observer { newResult ->
+            Log.v("Bug?", "result updated signal fired $newResult")
+            onResultUpdated(newResult)
+        })
+    }
+
+    private fun initExprObserver() {
+        calculatorViewModel.currentExpr.observe(viewLifecycleOwner, Observer { newExpr ->
+            updateView(newExpr)
+        })
     }
 
     private fun initVars() {
@@ -62,10 +78,15 @@ class OperationsFragment : Fragment() {
         // manually create clear and show result button since we want to have a different onClickListeners
         createAndAddButton("C", linearLayoutRowFour, this::onClear)
         createAndAddButton("0", linearLayoutRowFour, this::sendToViewModel)
-        createAndAddButton("=", linearLayoutRowFour, this::onShowResult)
+        createAndAddButton("=", linearLayoutRowFour, this::onCalculateResult)
         createAndAddButton("/", linearLayoutRowFour, this::sendToViewModel)
 
         screen = parentView.findViewById(R.id.input_text_view)
+    }
+
+    private fun onCalculateResult(it: View){
+        Log.v("Bug?", "onCalculateResultCalled")
+        calculatorViewModel.calculateResult()
     }
 
     private fun onClear(it: View){
@@ -95,8 +116,6 @@ class OperationsFragment : Fragment() {
         val clickedButton = it as Button;
         Log.v("DefaultCallback", " ${clickedButton.text.toString()} clicked")
         this.calculatorViewModel.receiveInput(clickedButton.text.toString().first());
-
-        updateView(this.calculatorViewModel.getCurrentExpr())
     }
 
 
@@ -118,12 +137,22 @@ class OperationsFragment : Fragment() {
         screen.text = text
     }
 
-    fun onShowResult(it: View){
-        val dataToSend: Bundle = Bundle()
-        dataToSend.putFloat("result", calculatorViewModel.getResult())
+    fun onResultUpdated(result: Float){
+        val dataToSend: Bundle = bundleOf("result" to result)
+        Log.v("Bug?", "Result updated: $result and ${calculatorViewModel.isShowResultCompleted()}")
+        if(!calculatorViewModel.isShowResultCompleted()){
+            // FIXME: the resultUpdated event is fired and result fragment is shown everytime I press back idk why
+            // tried to fix it by including a flag to indicate if the result was already shown
+            // but this too doesn't work, and I have to press back twice before the flag is finally set to true
+            calculatorViewModel.showResultCompleted()
+            showResultFragment(dataToSend)
+        }
+    }
 
+    fun showResultFragment(dataToSend: Bundle){
         val resFragment = ResultFragment()
         resFragment.arguments = dataToSend
+
 
         requireActivity().supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, resFragment)

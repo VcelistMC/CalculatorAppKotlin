@@ -37,7 +37,7 @@ class ResultFragment : Fragment() {
     }
 
     private fun initVars(){
-        val result = receiveResultIfExists()
+        val result = ResultViewModel.extractFromBundle(this.arguments)
         resultViewModelFactory = ResultViewModelFactory(result)
 
         resultViewModel = ViewModelProvider(this, resultViewModelFactory)
@@ -64,13 +64,5 @@ class ResultFragment : Fragment() {
     }
 
 
-    private fun receiveResultIfExists(): Float {
-        val incomingData: Bundle? = this.arguments;
-        if(incomingData != null){
-            val result = incomingData.getFloat("result")
-            return result
-        }
-        return 0.0f
-    }
 
 }

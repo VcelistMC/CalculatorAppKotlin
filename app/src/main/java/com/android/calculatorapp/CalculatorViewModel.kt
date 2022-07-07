@@ -1,20 +1,38 @@
 package com.android.calculatorapp
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class CalculatorViewModel: ViewModel() {
-    var currentResult = 0f
-    var number1 = ""
-    var number2 = ""
-    var operation = ""
+    private var number1 = ""
+    private var number2 = ""
+    private var operation = ""
+    private var showResultCompleted = false
+
+    private val _currentExpr = MutableLiveData<String>()
+    val currentExpr: LiveData<String>
+        get() = _currentExpr
+
+    private val _currentResult = MutableLiveData<Float>()
+    val currentResult: LiveData<Float>
+        get() = _currentResult
+
 
 
     fun initMembers(){
-        currentResult = 0f
         number1 = ""
         number2 = ""
         operation = ""
+    }
+
+    fun isShowResultCompleted(): Boolean{
+        return showResultCompleted
+    }
+
+    fun showResultCompleted(){
+        showResultCompleted = true
     }
 
     fun receiveInput(input: Char){
@@ -28,6 +46,11 @@ class CalculatorViewModel: ViewModel() {
             }
 
         }
+        updateCurrExpr()
+    }
+
+    private fun updateCurrExpr() {
+        _currentExpr.value = number1 + operation + number2
     }
 
     override fun onCleared() {
@@ -41,25 +64,16 @@ class CalculatorViewModel: ViewModel() {
             return
 
         when(operation){
-            "+" -> currentResult = (number1.toInt() + number2.toInt()).toFloat();
-            "-" -> currentResult = (number1.toInt() - number2.toInt()).toFloat();
-            "*" -> currentResult = (number1.toInt() * number2.toInt()).toFloat();
-            "/" -> currentResult = (number1.toInt() / number2.toInt()).toFloat();
+            "+" -> _currentResult.value = (number1.toInt() + number2.toInt()).toFloat();
+            "-" -> _currentResult.value = (number1.toInt() - number2.toInt()).toFloat();
+            "*" -> _currentResult.value = (number1.toInt() * number2.toInt()).toFloat();
+            "/" -> _currentResult.value = (number1.toInt() / number2.toInt()).toFloat();
         }
-    }
-
-    fun getResult(): Float{
-        calculateResult()
-        val res =  currentResult
-        clear()
-        return res
+        showResultCompleted = false
     }
 
     fun clear(){
         initMembers()
     }
 
-    fun getCurrentExpr(): String{
-        return number1 + operation + number2
-    }
 }
