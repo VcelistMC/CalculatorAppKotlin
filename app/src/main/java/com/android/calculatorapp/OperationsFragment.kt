@@ -12,6 +12,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.ViewModelProvider
 import java.lang.Character.isDigit
 import java.util.*
 
@@ -22,7 +23,7 @@ class OperationsFragment : Fragment() {
     lateinit var linearLayoutRowThree: LinearLayout
     lateinit var linearLayoutRowFour: LinearLayout
     lateinit var screen: TextView
-    lateinit var screenData: ScreenData;
+    lateinit var calculatorViewModel: CalculatorViewModel
 
 
 
@@ -45,7 +46,7 @@ class OperationsFragment : Fragment() {
     }
 
     private fun initVars() {
-        screenData = ScreenData(this);
+        calculatorViewModel = ViewModelProvider(this).get(CalculatorViewModel::class.java)
     }
 
     private fun initViews(parentView: View) {
@@ -59,36 +60,58 @@ class OperationsFragment : Fragment() {
         constructRow(arrayOf('7', '8', '9', '*'), linearLayoutRowThree)
 
         linearLayoutRowFour = parentView.findViewById(R.id.linear_layout_row_four)
-        constructRow(arrayOf('C', '0', '=', '/'), linearLayoutRowFour)
+        // manually create clear and show result button since we want to have a different onClickListeners
+        createAndAddButton("C", linearLayoutRowFour, this::onClear)
+        createAndAddButton("0", linearLayoutRowFour, this::sendToViewModel)
+        createAndAddButton("=", linearLayoutRowFour, this::onShowResult)
+        createAndAddButton("/", linearLayoutRowFour, this::sendToViewModel)
 
         screen = parentView.findViewById(R.id.input_text_view)
     }
+
+
+
+    private fun onClear(it: View){
+        calculatorViewModel.clear()
+        updateView("")
+    }
+
 
     private fun constructRow(rowElements: Array<Char>, parentLayout: LinearLayout){
         for(element in rowElements){
             createAndAddButton(
                 element.toString(),
                 parentLayout,
-                isDigit(element)
+                this::sendToViewModel
             )
         }
     }
 
-    private fun createAndAddButton(buttonText: String, parentLayout: LinearLayout, isNumberButton: Boolean){
-        val newButton = createButton(buttonText, isNumberButton)
+    private fun createAndAddButton(buttonText: String, parentLayout: LinearLayout, buttonCallback: (it: View) -> Unit){
+        val newButton = createButton(buttonText, buttonCallback)
         parentLayout.addView(newButton)
     }
 
-    private fun createButton(buttonText: String, isNumberButton: Boolean): Button{
-        val newButton: Button = Button(requireActivity())
+    private fun sendToViewModel(it: View){
+        val clickedButton = it as Button;
+        Log.v("DefaultCallback", " ${clickedButton.text.toString()} clicked")
+        this.calculatorViewModel.receiveInput(clickedButton.text.toString().first());
+
+        updateView(this.calculatorViewModel.getCurrentExpr())
+    }
+
+
+
+    private fun createButton(buttonText: String, buttonCallback: (it: View) -> Unit): Button{
+        Log.v("ButtonFactoryMethod", "$buttonText created")
+        val newButton: Button = Button(requireContext())
         val params = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
         params.setMargins(10,0,10,0);
         newButton.layoutParams = params
         newButton.text = buttonText
 
         newButton.setOnClickListener {
-            val clickedButton = it as Button;
-            this.screenData.receiveInput(clickedButton.text.toString().first());
+            buttonCallback(it)
         }
         return newButton;
     }
@@ -97,9 +120,9 @@ class OperationsFragment : Fragment() {
         screen.text = text
     }
 
-    fun showResult(result: Float){
+    fun onShowResult(it: View){
         val dataToSend: Bundle = Bundle()
-        dataToSend.putFloat("result", result)
+        dataToSend.putFloat("result", calculatorViewModel.getResult())
 
         val resFragment = ResultFragment()
         resFragment.arguments = dataToSend

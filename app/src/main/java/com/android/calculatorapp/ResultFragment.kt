@@ -7,11 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.lifecycle.ViewModelProvider
 
 
 class ResultFragment : Fragment() {
     lateinit var resultView: TextView
     lateinit var backButton: Button
+    lateinit var resultViewModel: ResultViewModel
+    lateinit var resultViewModelFactory: ResultViewModelFactory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,11 +25,23 @@ class ResultFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initViews(view);
         initClickListeners();
-        receiveBundleIfExists()
+        initVars()
     }
 
     private fun initClickListeners() {
         initBackButtonListener()
+    }
+
+    private fun showResult(){
+        resultView.text = resultViewModel.result.toString()
+    }
+
+    private fun initVars(){
+        val result = receiveResultIfExists()
+        resultViewModelFactory = ResultViewModelFactory(result)
+
+        resultViewModel = ViewModelProvider(this, resultViewModelFactory)
+            .get(ResultViewModel::class.java)
     }
 
     private fun initBackButtonListener() {
@@ -49,13 +64,13 @@ class ResultFragment : Fragment() {
     }
 
 
-    private fun receiveBundleIfExists() {
+    private fun receiveResultIfExists(): Float {
         val incomingData: Bundle? = this.arguments;
         if(incomingData != null){
             val result = incomingData.getFloat("result")
-            resultView.text = result.toString()
-
+            return result
         }
+        return 0.0f
     }
 
 }
